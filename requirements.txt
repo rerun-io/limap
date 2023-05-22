@@ -27,6 +27,7 @@ einops
 ninja
 yacs
 python-json-logger
+rerun-sdk
 
 ./third-party/pytlsd
 ./third-party/hawp
