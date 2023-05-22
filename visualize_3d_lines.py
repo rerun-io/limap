@@ -25,6 +25,8 @@ def vis_3d_lines(lines, mode="open3d", ranges=None, scale=1.0):
         limapvis.pyvista_vis_3d_lines(lines, ranges=ranges, scale=scale)
     elif mode == "open3d":
         limapvis.open3d_vis_3d_lines(lines, ranges=ranges, scale=scale)
+    elif mode == "rerun":
+        limapvis.rerun_vis_3d_lines(lines, ranges=ranges, scale=scale)
     else:
         raise NotImplementedError
 
