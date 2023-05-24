@@ -33,6 +33,8 @@ def vis_3d_lines(lines, mode="open3d", ranges=None, scale=1.0):
 def vis_reconstruction(linetracks, imagecols, mode="open3d", n_visible_views=4, ranges=None, scale=1.0, cam_scale=1.0):
     if mode == "open3d":
         VisTrack = limapvis.Open3DTrackVisualizer(linetracks)
+    if mode == "rerun":
+        VisTrack = limapvis.RerunTrackVisualizer(linetracks)
     else:
         raise ValueError("Error! Visualization with cameras is only supported with open3d.")
     VisTrack.report()

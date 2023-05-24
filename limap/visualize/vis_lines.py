@@ -146,4 +146,4 @@ def rerun_vis_3d_lines(lines, width=0.01, ranges=None, scale=1.0):
     import rerun as rr
     rr.init("limap", spawn=True)
     line_segments = rerun_get_line_segments(lines, ranges=ranges, scale=scale)
-    rr.log_line_segments("lines", line_segments, stroke_width=width, color=[0.0,0.0,0.0])
+    rr.log_line_segments("lines", line_segments, stroke_width=width, color=[1.0, 0.0, 0.0])
