@@ -12,7 +12,7 @@ def parse_args():
     arg_parser.add_argument('-nv', '--n_visible_views', type=int, default=2, help='number of visible views')
     arg_parser.add_argument('--imagecols', type=str, default=None, help=".npy file for imagecols")
     arg_parser.add_argument("--metainfos", type=str, default=None, help=".txt file for neighbors and ranges")
-    arg_parser.add_argument('--mode', type=str, default="open3d", help="[pyvista, open3d]")
+    arg_parser.add_argument('--mode', type=str, default="open3d", help="[pyvista, open3d, rerun]")
     arg_parser.add_argument('--use_robust_ranges', action='store_true', help="whether to use computed robust ranges")
     arg_parser.add_argument('--scale', type=float, default=1.0, help="scaling both the lines and the camera geometry")
     arg_parser.add_argument('--cam_scale', type=float, default=1.0, help="scale of the camera geometry")
@@ -33,10 +33,10 @@ def vis_3d_lines(lines, mode="open3d", ranges=None, scale=1.0):
 def vis_reconstruction(linetracks, imagecols, mode="open3d", n_visible_views=4, ranges=None, scale=1.0, cam_scale=1.0):
     if mode == "open3d":
         VisTrack = limapvis.Open3DTrackVisualizer(linetracks)
-    if mode == "rerun":
+    elif mode == "rerun":
         VisTrack = limapvis.RerunTrackVisualizer(linetracks)
     else:
-        raise ValueError("Error! Visualization with cameras is only supported with open3d.")
+        raise ValueError("Error! Visualization with cameras is only supported with open3d and rerun.")
     VisTrack.report()
     VisTrack.vis_reconstruction(imagecols, n_visible_views=n_visible_views, ranges=ranges, scale=scale, cam_scale=cam_scale)
 
