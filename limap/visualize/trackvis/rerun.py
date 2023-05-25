@@ -35,6 +35,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         cam_scale=1.0,
     ):
         rr.init("limap reconstruction visualization", spawn=True)
+        rr.log_view_coordinates("world", up="+Z", timeless=True)
 
         # TODO feature parity for ranges
 
