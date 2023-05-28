@@ -24,8 +24,10 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         width=0.01,
         ranges=None,
         scale=1.0,
-        cam_scale=1.0,
+        cam_scale=1.0
     ):
+        del cam_scale  # can be adjusted within rerun
+
         rr.init("limap reconstruction visualization", spawn=True)
         rr.log_view_coordinates("world", up="+Z", timeless=True)
 
@@ -36,17 +38,18 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         self._log_lines_per_frame(n_visible_views, width, scale, ranges)
 
         # cameras and images
+        # TODO scale for log_camviews
         self._log_camviews(imagecols.get_camviews(), ranges)
 
-        # TODO scale for log_camviews
+        # TODO visualize detected 2D lines
 
-        # TODO remove cam_scale (?)
+        # TODO visualize 3D tracks (line candidates + 2D lines)
 
-        # TODO optional sequence-mode logging (with lines appearing as images come in)
-        # TODO visualize other data stored in output (keypoints, detected 2D lines)
-
-        # TODO visualize line-point associationg (degree-1 point and degree-2 junctions)
-        # TODO visualize parallel line association
+        # Possible extensions
+        # TODO visualize colmap 3D points
+        #  need to modify visualize_3d_lines.py script and pass colmap input
+        # TODO visualize line-point association and vanishing point association
+        #  see vis_bipartite.py and pointline_association.py
 
     def _log_lines_timeless(self, n_visible_views, width=0.01, scale=1.0, ranges=None):
         lines = self.get_lines_n_visible_views(n_visible_views)
