@@ -1,6 +1,7 @@
 """Module providing interactive visualization based on rerun."""
 import os
 import sys
+from collections import defaultdict
 
 import cv2
 import rerun as rr
@@ -35,10 +36,11 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
 
         # TODO feature parity for ranges
 
-        # all lines
+        # all lines (i.e., full reconstruction)
         self._log_lines_timeless(n_visible_views, width, scale, ranges)
 
-        # TODO sequential lines
+        # sequential lines (i.e., as lines are reconstructed)
+        self._log_lines_per_frame(n_visible_views, width, scale, ranges)
 
         # cameras and images
         self._log_camviews(imagecols.get_camviews())
@@ -61,6 +63,23 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             color=[1.0, 0.0, 0.0],
             timeless=True,
         )
+
+    def _log_lines_per_frame(self, n_visible_views, width=0.01, scale=1.0, ranges=None):
+        """Log lines based on when they are visible in n_visible views."""
+        for i, track in enumerate(self.tracks):
+            if track.count_images() < n_visible_views:
+                continue
+            line_segments = rerun_get_line_segments(
+                [track.line], ranges=ranges, scale=scale
+            )
+            frame_id = track.GetSortedImageIds()[n_visible_views - 1]
+            rr.set_time_sequence("frame_id", frame_id)
+            rr.log_line_segments(
+                f"world/sequential_lines/#{i}",
+                line_segments,
+                stroke_width=width,
+                color=[1.0, 0.0, 0.0],
+            )
 
     def _log_camviews(self, camviews):
         for i, camview in enumerate(camviews):
