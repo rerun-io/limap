@@ -11,7 +11,7 @@ from .base import BaseTrackVisualizer
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from vis_lines import rerun_get_line_segments
-from vis_utils import compute_robust_range_lines
+from vis_utils import test_point_inside_ranges
 
 
 class RerunTrackVisualizer(BaseTrackVisualizer):
@@ -34,8 +34,6 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         rr.init("limap reconstruction visualization", spawn=True)
         rr.log_view_coordinates("world", up="+Z", timeless=True)
 
-        # TODO feature parity for ranges
-
         # all lines (i.e., full reconstruction)
         self._log_lines_timeless(n_visible_views, width, scale, ranges)
 
@@ -43,9 +41,11 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         self._log_lines_per_frame(n_visible_views, width, scale, ranges)
 
         # cameras and images
-        self._log_camviews(imagecols.get_camviews())
+        self._log_camviews(imagecols.get_camviews(), ranges)
 
         # TODO scale for log_camviews
+
+        # TODO remove cam_scale (?)
 
         # TODO optional sequence-mode logging (with lines appearing as images come in)
         # TODO visualize other data stored in output (keypoints, detected 2D lines)
@@ -72,6 +72,8 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             line_segments = rerun_get_line_segments(
                 [track.line], ranges=ranges, scale=scale
             )
+            if len(line_segments) == 0:
+                continue
             frame_id = track.GetSortedImageIds()[n_visible_views - 1]
             rr.set_time_sequence("frame_id", frame_id)
             rr.log_line_segments(
@@ -81,8 +83,11 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 color=[1.0, 0.0, 0.0],
             )
 
-    def _log_camviews(self, camviews):
+    def _log_camviews(self, camviews, ranges=None):
         for i, camview in enumerate(camviews):
+            if ranges is not None:
+                if not test_point_inside_ranges(camview.T(), ranges):
+                    continue
             bgr_img = cv2.imread(camview.image_name())
             rgb_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
             width, height = camview.w(), camview.h()
