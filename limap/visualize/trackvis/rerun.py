@@ -1,17 +1,12 @@
 """Module providing interactive visualization based on rerun."""
-import os
-import sys
-from collections import defaultdict
-
 import cv2
 import rerun as rr
 from scipy.spatial import transform
 
-from .base import BaseTrackVisualizer
+from limap.visualize.vis_lines import rerun_get_line_segments
+from limap.visualize.vis_utils import test_point_inside_ranges
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from vis_lines import rerun_get_line_segments
-from vis_utils import test_point_inside_ranges
+from .base import BaseTrackVisualizer
 
 
 class RerunTrackVisualizer(BaseTrackVisualizer):
