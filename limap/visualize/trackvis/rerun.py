@@ -38,8 +38,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         self._log_lines_per_frame(n_visible_views, width, scale, ranges)
 
         # cameras and images
-        # TODO scale for log_camviews
-        self._log_camviews(imagecols.get_camviews(), ranges)
+        self._log_camviews(imagecols.get_camviews(), scale, ranges)
 
         # TODO visualize detected 2D lines
 
@@ -81,7 +80,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 color=[1.0, 0.0, 0.0],
             )
 
-    def _log_camviews(self, camviews, ranges=None):
+    def _log_camviews(self, camviews, scale=1.0, ranges=None):
         for i, camview in enumerate(camviews):
             if ranges is not None:
                 if not test_point_inside_ranges(camview.T(), ranges):
@@ -92,7 +91,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             rgb_img = cv2.resize(rgb_img, (width, height))
             rr.set_time_sequence("frame_id", i)
             rr.log_image("world/camera/image", rgb_img)
-            translation_xyz = camview.T()
+            translation_xyz = camview.T() * scale
             quaternion_xyzw = transform.Rotation.from_matrix(camview.R()).as_quat()
             rr.log_rigid3(
                 "world/camera",
