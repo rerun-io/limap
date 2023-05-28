@@ -99,9 +99,12 @@ def pointline_association(cfg, input_folder, output_folder, colmap_folder):
             # optimize again
             associator.SetUp()
             associator.Solve()
+
     new_imagecols = associator.GetOutputImagecols()
     bpt3d = associator.GetBipartite3d_PointLine()
-    bpt3d_vp = associator.GetBipartite3d_VPLine()
+    if cfg["global_pl_association"]["use_vp"]:
+        bpt3d_vp = associator.GetBipartite3d_VPLine()
+
 
     ############################################################
     # IO & visualization
