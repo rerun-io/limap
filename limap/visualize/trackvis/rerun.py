@@ -43,7 +43,11 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         lines = self.get_lines_n_visible_views(n_visible_views)
         line_segments = rerun_get_line_segments(lines, ranges=ranges, scale=scale)
         rr.log_line_segments(
-            "world/lines", line_segments, stroke_width=width, color=[1.0, 0.0, 0.0]
+            "world/lines",
+            line_segments,
+            stroke_width=width,
+            color=[1.0, 0.0, 0.0],
+            timeless=True,
         )
 
         # cameras and images
