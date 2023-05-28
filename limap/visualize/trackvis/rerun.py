@@ -19,11 +19,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
 
     def vis_all_lines(self, n_visible_views=4, width=0.01, scale=1.0):
         rr.init("limap line visualization", spawn=True)
-        lines = self.get_lines_n_visible_views(n_visible_views)
-        line_segments = rerun_get_line_segments(lines, scale=scale)
-        rr.log_line_segments(
-            "lines", line_segments, stroke_width=width, color=[1.0, 0.0, 0.0]
-        )
+        self._log_lines_timeless(n_visible_views, width, scale)
 
     def vis_reconstruction(
         self,
@@ -39,7 +35,23 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
 
         # TODO feature parity for ranges
 
-        # lines
+        # all lines
+        self._log_lines_timeless(n_visible_views, width, scale, ranges)
+
+        # TODO sequential lines
+
+        # cameras and images
+        self._log_camviews(imagecols.get_camviews())
+
+        # TODO scale for log_camviews
+
+        # TODO optional sequence-mode logging (with lines appearing as images come in)
+        # TODO visualize other data stored in output (keypoints, detected 2D lines)
+
+        # TODO visualize line-point associationg (degree-1 point and degree-2 junctions)
+        # TODO visualize parallel line association
+
+    def _log_lines_timeless(self, n_visible_views, width=0.01, scale=1.0, ranges=None):
         lines = self.get_lines_n_visible_views(n_visible_views)
         line_segments = rerun_get_line_segments(lines, ranges=ranges, scale=scale)
         rr.log_line_segments(
@@ -49,15 +61,6 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             color=[1.0, 0.0, 0.0],
             timeless=True,
         )
-
-        # cameras and images
-        self._log_camviews(imagecols.get_camviews())
-
-        # TODO optional sequence-mode logging (with lines appearing as images come in)
-        # TODO visualize other data stored in output (keypoints, detected 2D lines)
-
-        # TODO visualize line-point associationg (degree-1 point and degree-2 junctions)
-        # TODO visualize parallel line association
 
     def _log_camviews(self, camviews):
         for i, camview in enumerate(camviews):
