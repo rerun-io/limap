@@ -60,7 +60,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             "world/lines",
             line_segments,
             stroke_width=width,
-            color=[1.0, 0.0, 0.0],
+            color=[0.9, 0.1, 0.1],
             timeless=True,
         )
 
@@ -80,7 +80,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 f"world/sequential_lines/#{i}",
                 line_segments,
                 stroke_width=width,
-                color=[1.0, 0.0, 0.0],
+                color=[0.9, 0.1, 0.1],
             )
 
     def _log_camviews(self, camviews, scale=1.0, ranges=None):
@@ -123,6 +123,13 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         points_deg2 = [p for p, deg in zip(points, degrees) if deg == 2]
         points_deg3p = [p for p, deg in zip(points, degrees) if deg >= 3]
 
+        rr.log_points(
+            "world/points",
+            positions=points,
+            colors=[0.7, 0.3, 0.3],
+            radii=0.01,
+            timeless=True,
+        )
         rr.log_points(
             "world/pl_associations/deg0",
             positions=points_deg0,
