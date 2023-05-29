@@ -1,6 +1,7 @@
 """Module providing interactive visualization based on rerun."""
 import cv2
 import rerun as rr
+import numpy as np
 from scipy.spatial import transform
 
 from limap.visualize.vis_lines import rerun_get_line_segments
@@ -48,7 +49,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
 
         # visualize colmap points, and line-point associations
         if self.bpt3d_pl is not None:
-            self._log_bpt3d_pl(self.bpt3d_pl)
+            self._log_bpt3d_pl(scale, ranges)
 
         # TODO visualize vanishing point association
         #  see vis_bipartite.py and pointline_association.py
@@ -111,7 +112,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
     def _log_bpt3d_pl(self, scale=1.0, ranges=None):
         points, degrees = [], []
         for idx, ptrack in self.bpt3d_pl.get_dict_points().items():
-            p = ptrack.p
+            p = ptrack.p * scale
             deg = self.bpt3d_pl.pdegree(idx)
             if ranges is not None:
                 if not test_point_inside_ranges(p, ranges):
