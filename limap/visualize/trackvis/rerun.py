@@ -109,4 +109,45 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             )
 
     def _log_bpt3d_pl(self, scale=1.0, ranges=None):
-        breakpoint()
+        points, degrees = [], []
+        for idx, ptrack in self.bpt3d_pl.get_dict_points().items():
+            p = ptrack.p
+            deg = self.bpt3d_pl.pdegree(idx)
+            if ranges is not None:
+                if not test_point_inside_ranges(p, ranges):
+                    continue
+            points.append(p)
+            degrees.append(deg)
+        points_deg0 = [p for p, deg in zip(points, degrees) if deg == 0]
+        points_deg1 = [p for p, deg in zip(points, degrees) if deg == 1]
+        points_deg2 = [p for p, deg in zip(points, degrees) if deg == 2]
+        points_deg3p = [p for p, deg in zip(points, degrees) if deg >= 3]
+
+        rr.log_points(
+            "world/pl_associations/deg0",
+            positions=points_deg0,
+            colors=[0.3, 0.3, 0.3],
+            radii=0.01,
+            timeless=True,
+        )
+        rr.log_points(
+            "world/pl_associations/deg1",
+            positions=points_deg1,
+            colors=[0.3, 0.3, 0.9],
+            radii=0.03,
+            timeless=True,
+        )
+        rr.log_points(
+            "world/pl_associations/deg2",
+            positions=points_deg2,
+            colors=[0.3, 0.9, 0.3],
+            radii=0.05,
+            timeless=True,
+        )
+        rr.log_points(
+            "world/pl_associations/deg3p",
+            positions=points_deg3p,
+            colors=[0.9, 0.3, 0.3],
+            radii=0.07,
+            timeless=True,
+        )
