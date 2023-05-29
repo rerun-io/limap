@@ -10,8 +10,10 @@ from .base import BaseTrackVisualizer
 
 
 class RerunTrackVisualizer(BaseTrackVisualizer):
-    def __init__(self, tracks):
+    def __init__(self, tracks, bpt3d_pl=None, bpt3d_vp=None):
         super(RerunTrackVisualizer, self).__init__(tracks)
+        self.bpt3d_pl = bpt3d_pl
+        self.bpt3d_vp = bpt3d_vp
 
     def vis_all_lines(self, n_visible_views=4, width=0.01, scale=1.0):
         rr.init("limap line visualization", spawn=True)
@@ -24,7 +26,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         width=0.01,
         ranges=None,
         scale=1.0,
-        cam_scale=1.0
+        cam_scale=1.0,
     ):
         del cam_scale  # can be adjusted within rerun
 
@@ -44,10 +46,11 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
 
         # TODO visualize 3D tracks (line candidates + 2D lines)
 
-        # Possible extensions
-        # TODO visualize colmap 3D points
-        #  need to modify visualize_3d_lines.py script and pass colmap input
-        # TODO visualize line-point association and vanishing point association
+        # visualize colmap points, and line-point associations
+        if self.bpt3d_pl is not None:
+            self._log_bpt3d_pl(self.bpt3d_pl)
+
+        # TODO visualize vanishing point association
         #  see vis_bipartite.py and pointline_association.py
 
     def _log_lines_timeless(self, n_visible_views, width=0.01, scale=1.0, ranges=None):
@@ -104,3 +107,6 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 width=width,
                 height=height,
             )
+
+    def _log_bpt3d_pl(self, scale=1.0, ranges=None):
+        breakpoint()
