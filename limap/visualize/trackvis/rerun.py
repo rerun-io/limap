@@ -5,7 +5,7 @@ import rerun as rr
 from scipy.spatial import transform
 
 from limap.visualize.vis_lines import rerun_get_line_segments
-from limap.visualize.vis_utils import test_point_inside_ranges
+from limap.visualize.vis_utils import test_line_inside_ranges, test_point_inside_ranges
 
 from .base import BaseTrackVisualizer
 
@@ -59,7 +59,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
 
         # visualize vanishing point association
         if self.bpt3d_vp is not None:
-            self._log_bpt3d_vp(scale, ranges)
+            self._log_bpt3d_vp(width, scale, ranges)
 
     def _log_lines_timeless(self, n_visible_views, width=0.01, scale=1.0, ranges=None):
         lines = self.get_lines_n_visible_views(n_visible_views)
@@ -192,6 +192,35 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             timeless=True,
         )
 
-    def _log_bpt3d_vp(self, scale=1.0, ranges=None):
-        # TODO implement visualization of vp association
-        pass
+    def _log_bpt3d_vp(self, width=0.01, scale=1.0, ranges=None):
+        vp_ids = self.bpt3d_vp.get_point_ids()
+        vp_line_sets = {vp_id: [] for vp_id in vp_ids}
+        nonvp_line_set = []
+        for line_id, ltrack in self.bpt3d_vp.get_dict_lines().items():
+            if ranges is not None:
+                if not test_line_inside_ranges(ltrack.line, ranges):
+                    continue
+            vp_ids = self.bpt3d_vp.neighbor_points(line_id)
+            if len(vp_ids) == 0:
+                nonvp_line_set.append(ltrack.line)
+                continue
+            assert len(vp_ids) == 1
+            vp_id = vp_ids[0]
+            vp_line_sets[vp_id].append(ltrack.line)
+
+        if len(nonvp_line_set):
+            rr.log_line_segments(
+                "world/vp_associations/no_vp",
+                rerun_get_line_segments(nonvp_line_set, ranges, scale),
+                stroke_width=width,
+                color=[0.5, 0.5, 0.5],
+                timeless=True,
+            )
+
+        for vp_id, vp_line_set in vp_line_sets.items():
+            rr.log_line_segments(
+                f"world/vp_associations/vp_{vp_id}",
+                rerun_get_line_segments(vp_line_set, ranges, scale),
+                stroke_width=width,
+                timeless=True,
+            )
