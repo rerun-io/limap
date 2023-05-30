@@ -1,4 +1,6 @@
 """Module providing interactive visualization based on rerun."""
+from collections import defaultdict
+
 import cv2
 import numpy as np
 import rerun as rr
@@ -49,15 +51,18 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         #  adjustable / hideable RGB frame / gizmo
         #  avoid views for each image to pop up initially and on reset
 
-        # TODO visualize detected 2D lines
+        # 2d line detections
+        self._log_line_detections(width)
 
-        # TODO visualize 3D tracks (line candidates + 2D lines)
+        # 3d tracks (candidates + detections)
+        self._log_tracks(width, scale, ranges)
+        self._log_single_track(0, width, scale, ranges)
 
-        # visualize colmap points, and line-point associations
+        # colmap points and line-point associations
         if self.bpt3d_pl is not None:
             self._log_bpt3d_pl(scale, ranges)
 
-        # visualize vanishing point association
+        # vanishing point association
         if self.bpt3d_vp is not None:
             self._log_bpt3d_vp(width, scale, ranges)
 
@@ -224,3 +229,84 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 stroke_width=width,
                 timeless=True,
             )
+
+    def _log_tracks(self, width=0.02, scale=1.0, ranges=None):
+        candidate_lines = []
+        for track in self.tracks:
+            candidate_lines += track.line3d_list
+
+        rr.log_line_segments(
+            "world/candidate_lines",
+            rerun_get_line_segments(candidate_lines, ranges, scale),
+            stroke_width=width,
+            color=[0.1, 0.9, 0.1],
+            timeless=True,
+        )
+
+    def _log_single_track(self, track_id, width=0.02, scale=1.0, ranges=None):
+        if track_id >= len(self.tracks):
+            print("Specified track_id not available.")
+            return
+
+        # TODO there seems to be a bug with 2D lines image_ids not matching the frame_id
+        #  first 30 frames work well, so not sure what the issue is yet
+
+        track = self.tracks[track_id]
+
+        line_segments = rerun_get_line_segments(
+            [track.line], ranges=ranges, scale=scale
+        )
+        if len(line_segments) == 0:
+            return
+
+        rr.log_line_segments(
+            f"world/track_{track_id}/final_line",
+            line_segments,
+            stroke_width=width,
+            color=[1.0, 0.0, 0.0],
+            timeless=True,
+        )
+        min_score = min(track.score_list)
+        max_score = max(track.score_list)
+        lines_2d_dict = defaultdict(list)
+        for line_id, (image_id, line, score, line_2d) in enumerate(
+            zip(
+                track.image_id_list,
+                track.line3d_list,
+                track.score_list,
+                track.line2d_list,
+            )
+        ):
+            line_segments_3d = rerun_get_line_segments(
+                [line], ranges=ranges, scale=scale
+            )
+            if len(line_segments_3d) == 0:
+                continue
+
+            rr.set_time_sequence("frame_id", image_id)
+            rr.log_line_segments(
+                f"world/track_{track_id}/lines/#{line_id}",
+                line_segments_3d,
+                stroke_width=width,
+                color=[0.1, (score - min_score) / (max_score - min_score), 0.1],
+            )
+            lines_2d_dict[image_id].append(line_2d)
+
+        for image_id, lines_2d in lines_2d_dict.items():
+            line_segments_2d = rerun_get_line_segments(
+                lines_2d, ranges=ranges, scale=scale
+            )
+            rr.set_time_sequence("frame_id", image_id)
+            rr.log_line_segments(
+                f"world/camera/image/line_track_{track_id}",
+                line_segments_2d,
+                stroke_width=5,
+                color=[0.1, (score - min_score) / (max_score - min_score), 0.1],
+            )
+            if image_id + 1 not in lines_2d_dict:
+                rr.set_time_sequence("frame_id", image_id + 1)
+                rr.log_cleared(f"world/camera/image/line_track_{track_id}")
+
+    def _log_line_detections(self, width=1):
+        # TODO add another parameter to visualize_3d_lines script
+        pass
