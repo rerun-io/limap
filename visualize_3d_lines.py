@@ -70,7 +70,7 @@ def main(args):
         elif (not os.path.exists(args.bpt3d_vp)) or (not args.bpt3d_vp.endswith('.npz')):
             raise ValueError("Error! Input file {0} is not valid".format(args.bpt3d_vp))
         else:
-            bpt3d_pl = limapio.read_npz(args.bpt3d_vp)
+            bpt3d_vp = _structures.VPLine_Bipartite3d(limapio.read_npz(args.bpt3d_vp)["bpt3d_vp_np"].item())
 
         imagecols = _base.ImageCollection(limapio.read_npy(args.imagecols).item())
         vis_reconstruction(linetracks, imagecols, mode=args.mode, n_visible_views=args.n_visible_views, ranges=ranges, scale=args.scale, cam_scale=args.cam_scale, bpt3d_pl=bpt3d_pl, bpt3d_vp=bpt3d_vp)

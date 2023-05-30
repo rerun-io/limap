@@ -57,8 +57,9 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         if self.bpt3d_pl is not None:
             self._log_bpt3d_pl(scale, ranges)
 
-        # TODO visualize vanishing point association
-        #  see vis_bipartite.py and pointline_association.py
+        # visualize vanishing point association
+        if self.bpt3d_vp is not None:
+            self._log_bpt3d_vp(scale, ranges)
 
     def _log_lines_timeless(self, n_visible_views, width=0.01, scale=1.0, ranges=None):
         lines = self.get_lines_n_visible_views(n_visible_views)
@@ -190,3 +191,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             radii=0.07,
             timeless=True,
         )
+
+    def _log_bpt3d_vp(self, scale=1.0, ranges=None):
+        # TODO implement visualization of vp association
+        pass
