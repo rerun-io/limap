@@ -1,7 +1,7 @@
 """Module providing interactive visualization based on rerun."""
 import cv2
-import rerun as rr
 import numpy as np
+import rerun as rr
 from scipy.spatial import transform
 
 from limap.visualize.vis_lines import rerun_get_line_segments
@@ -32,6 +32,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         del cam_scale  # can be adjusted within rerun
 
         rr.init("limap reconstruction visualization", spawn=True)
+
         rr.log_view_coordinates("world", up="+Z", timeless=True)
 
         # all lines (i.e., full reconstruction)
@@ -42,6 +43,11 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
 
         # cameras and images
         self._log_camviews(imagecols.get_camviews(), scale, ranges)
+        # self._log_camviews_separate(imagecols.get_camviews(), scale, ranges)
+        # NOTE doesn't work well right now, wait for future rerun versions, requires:
+        #  adjustable camera frustum from code or per-group
+        #  adjustable / hideable RGB frame / gizmo
+        #  avoid views for each image to pop up initially and on reset
 
         # TODO visualize detected 2D lines
 
@@ -104,6 +110,31 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             rr.log_view_coordinates("world/camera", xyz="RDF")
             rr.log_pinhole(
                 "world/camera/image",
+                child_from_parent=camview.K(),
+                width=width,
+                height=height,
+            )
+
+    def _log_camviews_separate(self, camviews, scale=1.0, ranges=None):
+        for i, camview in enumerate(camviews):
+            if ranges is not None:
+                if not test_point_inside_ranges(camview.T(), ranges):
+                    continue
+            bgr_img = cv2.imread(camview.image_name())
+            rgb_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
+            width, height = camview.w(), camview.h()
+            rgb_img = cv2.resize(rgb_img, (width, height))
+            rr.set_time_sequence("frame_id", i)
+            rr.log_image(f"world/cameras/#{i}/image", rgb_img)
+            translation_xyz = camview.T() * scale
+            quaternion_xyzw = transform.Rotation.from_matrix(camview.R()).as_quat()
+            rr.log_rigid3(
+                f"world/cameras/#{i}",
+                child_from_parent=(translation_xyz, quaternion_xyzw),
+            )
+            rr.log_view_coordinates(f"world/cameras/#{i}", xyz="RDF")
+            rr.log_pinhole(
+                f"world/cameras/#{i}/image",
                 child_from_parent=camview.K(),
                 width=width,
                 height=height,
