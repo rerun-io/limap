@@ -58,13 +58,20 @@ To run **Fitnmerge** (line mapping with available depth maps) on Hypersim (visua
 python runners/hypersim/fitnmerge.py --output_dir outputs/quickstart_fitnmerge
 ```
 
-To run **Line Mapping** (RGB-only) on Hypersim (visualization is enabled by default):
+To run **Line Mapping** (RGB-only) on Hypersim:
 ```bash
 python runners/hypersim/triangulation.py --output_dir outputs/quickstart_triangulation
 ```
+
+To run *Line-Point and Line-Vanishing-Point Optimization** on the previous result:
+```bash
+python runners/pointline_association.py -i outputs/quickstart_triangulation/finaltracks/ --colmap_folder outputs/quickstart_triangulation/colmap_outputs/sparse
+```
+
 To run **Visualization** of the 3D line maps after the reconstruction:
 ```bash
-python visualize_3d_lines.py --input_dir outputs/quickstart_triangulation/finaltracks # add the camera frustums with "--imagecols outputs/quickstart_triangulation/imagecols.npy"
+python visualize_3d_lines.py --input_dir outputs/quickstart_triangulation/associated_tracks/ --imagecols outputs/quickstart_triangulation/associated_tracks/imagecols.npy --bpt3d_
+pl outputs/quickstart_triangulation/associated_tracks/bpt3d_pl.npz --bpt3d_vp outputs/quickstart_triangulation/associated_tracks/bpt3d_vp.npz --mode rerun
 ```
 
 [Tips] Options are stored in the config folder: ``cfgs``. You can easily change the options with the Python argument parser. The following shows an example:
