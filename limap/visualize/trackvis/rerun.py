@@ -13,10 +13,11 @@ from .base import BaseTrackVisualizer
 
 
 class RerunTrackVisualizer(BaseTrackVisualizer):
-    def __init__(self, tracks, bpt3d_pl=None, bpt3d_vp=None):
+    def __init__(self, tracks, bpt3d_pl=None, bpt3d_vp=None, segments2d_dict=None):
         super(RerunTrackVisualizer, self).__init__(tracks)
         self.bpt3d_pl = bpt3d_pl
         self.bpt3d_vp = bpt3d_vp
+        self.segments2d_dict = segments2d_dict
 
     def vis_all_lines(self, n_visible_views=4, width=0.01, scale=1.0):
         rr.init("limap line visualization", spawn=True)
@@ -52,7 +53,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         #  avoid views for each image to pop up initially and on reset
 
         # 2d line detections
-        self._log_line_detections(width)
+        self._log_line_detections()
 
         # 3d tracks (candidates + detections)
         self._log_tracks(width, scale, ranges)
@@ -297,13 +298,17 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             rr.log_line_segments(
                 f"world/camera/image/line_track_{track_id}",
                 line_segments_2d,
-                stroke_width=4,
                 color=[0.1, (score - min_score) / (max_score - min_score), 0.1],
             )
             if img_id + 1 not in lines_2d_dict:
                 rr.set_time_sequence("img_id", img_id + 1)
                 rr.log_cleared(f"world/camera/image/line_track_{track_id}")
 
-    def _log_line_detections(self, width=1):
-        # TODO add another parameter to visualize_3d_lines script
-        pass
+    def _log_line_detections(self):
+        for img_id, segments_2d in self.segments2d_dict.items():
+            line_segments_2d = segments_2d.reshape(-1, 2)
+            rr.set_time_sequence("img_id", img_id)
+            rr.log_line_segments(
+                "world/camera/image/detected_lines",
+                line_segments_2d,
+            )

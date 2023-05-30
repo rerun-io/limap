@@ -14,6 +14,7 @@ def parse_args():
     arg_parser.add_argument('--imagecols', type=str, default=None, help=".npy file for imagecols")
     arg_parser.add_argument('--bpt3d_pl', type=str, default=None, help=".npz file for point-line associations")
     arg_parser.add_argument('--bpt3d_vp', type=str, default=None, help=".npz file for line-vanishing point associations")
+    arg_parser.add_argument('--segments2d', type=str, default=None, help="directory containing detected 2D segments")
     arg_parser.add_argument("--metainfos", type=str, default=None, help=".txt file for neighbors and ranges")
     arg_parser.add_argument('--mode', type=str, default="open3d", help="[pyvista, open3d, rerun]")
     arg_parser.add_argument('--use_robust_ranges', action='store_true', help="whether to use computed robust ranges")
@@ -33,11 +34,11 @@ def vis_3d_lines(lines, mode="open3d", ranges=None, scale=1.0):
     else:
         raise NotImplementedError
 
-def vis_reconstruction(linetracks, imagecols, mode="open3d", n_visible_views=4, ranges=None, scale=1.0, cam_scale=1.0, bpt3d_pl=None, bpt3d_vp=None):
+def vis_reconstruction(linetracks, imagecols, mode="open3d", n_visible_views=4, ranges=None, scale=1.0, cam_scale=1.0, bpt3d_pl=None, bpt3d_vp=None, segments2d=None):
     if mode == "open3d":
         VisTrack = limapvis.Open3DTrackVisualizer(linetracks)
     elif mode == "rerun":
-        VisTrack = limapvis.RerunTrackVisualizer(linetracks, bpt3d_pl=bpt3d_pl, bpt3d_vp=bpt3d_vp)
+        VisTrack = limapvis.RerunTrackVisualizer(linetracks, bpt3d_pl=bpt3d_pl, bpt3d_vp=bpt3d_vp, segments2d_dict=segments2d)
     else:
         raise ValueError("Error! Visualization with cameras is only supported with open3d and rerun.")
     VisTrack.report()
@@ -72,8 +73,15 @@ def main(args):
         else:
             bpt3d_vp = _structures.VPLine_Bipartite3d(limapio.read_npz(args.bpt3d_vp)["bpt3d_vp_np"].item())
 
+        if args.segments2d is None:
+            segments2d = None
+        elif (not os.path.exists(args.segments2d)) or (not args.bpt3d_vp.endswith('.npz')):
+            raise ValueError("Error! Input file {0} is not valid".format(args.segments2d))
+        else:
+            segments2d = limapio.read_all_segments_from_folder(args.segments2d)
+
         imagecols = _base.ImageCollection(limapio.read_npy(args.imagecols).item())
-        vis_reconstruction(linetracks, imagecols, mode=args.mode, n_visible_views=args.n_visible_views, ranges=ranges, scale=args.scale, cam_scale=args.cam_scale, bpt3d_pl=bpt3d_pl, bpt3d_vp=bpt3d_vp)
+        vis_reconstruction(linetracks, imagecols, mode=args.mode, n_visible_views=args.n_visible_views, ranges=ranges, scale=args.scale, cam_scale=args.cam_scale, bpt3d_pl=bpt3d_pl, bpt3d_vp=bpt3d_vp, segments2d=segments2d)
     if args.output_dir is not None:
         limapio.save_obj(args.output_dir, lines)
 
