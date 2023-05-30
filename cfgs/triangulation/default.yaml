@@ -11,7 +11,7 @@ use_tmp: False
 n_visible_views: 4
 n_neighbors: 20 
 use_cuda: True
-visualize: True
+visualize: False
 max_image_dim: 1600
 skip_exists: False
 output_dir: null 
@@ -110,7 +110,7 @@ triangulation:
         th_sv_num_supports: 3
         th_overlap: 0.5
         th_overlap_num_supports: 3
-    use_vp: False 
+    use_vp: False
     vpdet_config:
         method: "jlinkage"
         n_jobs: 8
