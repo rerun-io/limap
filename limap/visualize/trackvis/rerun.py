@@ -238,7 +238,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         rr.log_line_segments(
             "world/candidate_lines",
             rerun_get_line_segments(candidate_lines, ranges, scale),
-            stroke_width=width,
+            stroke_width=width * 0.5,
             color=[0.1, 0.9, 0.1],
             timeless=True,
         )
@@ -274,7 +274,6 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 track.line2d_list,
             )
         ):
-            print(track.image_id_list)
             line_segments_3d = rerun_get_line_segments(
                 [line], ranges=ranges, scale=scale
             )
@@ -285,7 +284,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             rr.log_line_segments(
                 f"world/track_{track_id}/lines/#{line_id}",
                 line_segments_3d,
-                stroke_width=width,
+                stroke_width=width * 0.5,
                 color=[0.1, (score - min_score) / (max_score - min_score), 0.1],
             )
             lines_2d_dict[img_id].append(line_2d)
@@ -298,7 +297,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             rr.log_line_segments(
                 f"world/camera/image/line_track_{track_id}",
                 line_segments_2d,
-                stroke_width=5,
+                stroke_width=4,
                 color=[0.1, (score - min_score) / (max_score - min_score), 0.1],
             )
             if img_id + 1 not in lines_2d_dict:
