@@ -44,7 +44,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         self._log_lines_per_frame(n_visible_views, width, scale, ranges)
 
         # cameras and images
-        self._log_camviews(imagecols.get_camviews(), scale, ranges)
+        self._log_camviews(imagecols, scale, ranges)
         # self._log_camviews_separate(imagecols.get_camviews(), scale, ranges)
         # NOTE doesn't work well right now, wait for future rerun versions, requires:
         #  adjustable camera frustum from code or per-group
@@ -87,8 +87,8 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             )
             if len(line_segments) == 0:
                 continue
-            frame_id = track.GetSortedImageIds()[n_visible_views - 1]
-            rr.set_time_sequence("frame_id", frame_id)
+            img_id = track.GetSortedImageIds()[n_visible_views - 1]
+            rr.set_time_sequence("img_id", img_id)
             rr.log_line_segments(
                 f"world/sequential_lines/#{i}",
                 line_segments,
@@ -96,8 +96,8 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 color=[0.9, 0.1, 0.1],
             )
 
-    def _log_camviews(self, camviews, scale=1.0, ranges=None):
-        for i, camview in enumerate(camviews):
+    def _log_camviews(self, imagecols, scale=1.0, ranges=None):
+        for img_id, camview in imagecols.get_map_camviews().items():
             if ranges is not None:
                 if not test_point_inside_ranges(camview.T(), ranges):
                     continue
@@ -105,7 +105,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             rgb_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
             width, height = camview.w(), camview.h()
             rgb_img = cv2.resize(rgb_img, (width, height))
-            rr.set_time_sequence("frame_id", i)
+            rr.set_time_sequence("img_id", img_id)
             rr.log_image("world/camera/image", rgb_img)
             translation_xyz = camview.T() * scale
             quaternion_xyzw = transform.Rotation.from_matrix(camview.R()).as_quat()
@@ -130,7 +130,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             rgb_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
             width, height = camview.w(), camview.h()
             rgb_img = cv2.resize(rgb_img, (width, height))
-            rr.set_time_sequence("frame_id", i)
+            rr.set_time_sequence("img_id", i)
             rr.log_image(f"world/cameras/#{i}/image", rgb_img)
             translation_xyz = camview.T() * scale
             quaternion_xyzw = transform.Rotation.from_matrix(camview.R()).as_quat()
@@ -248,9 +248,6 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             print("Specified track_id not available.")
             return
 
-        # TODO there seems to be a bug with 2D lines image_ids not matching the frame_id
-        #  first 30 frames work well, so not sure what the issue is yet
-
         track = self.tracks[track_id]
 
         line_segments = rerun_get_line_segments(
@@ -269,7 +266,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         min_score = min(track.score_list)
         max_score = max(track.score_list)
         lines_2d_dict = defaultdict(list)
-        for line_id, (image_id, line, score, line_2d) in enumerate(
+        for line_id, (img_id, line, score, line_2d) in enumerate(
             zip(
                 track.image_id_list,
                 track.line3d_list,
@@ -277,34 +274,35 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 track.line2d_list,
             )
         ):
+            print(track.image_id_list)
             line_segments_3d = rerun_get_line_segments(
                 [line], ranges=ranges, scale=scale
             )
             if len(line_segments_3d) == 0:
                 continue
 
-            rr.set_time_sequence("frame_id", image_id)
+            rr.set_time_sequence("img_id", img_id)
             rr.log_line_segments(
                 f"world/track_{track_id}/lines/#{line_id}",
                 line_segments_3d,
                 stroke_width=width,
                 color=[0.1, (score - min_score) / (max_score - min_score), 0.1],
             )
-            lines_2d_dict[image_id].append(line_2d)
+            lines_2d_dict[img_id].append(line_2d)
 
-        for image_id, lines_2d in lines_2d_dict.items():
+        for img_id, lines_2d in lines_2d_dict.items():
             line_segments_2d = rerun_get_line_segments(
                 lines_2d, ranges=ranges, scale=scale
             )
-            rr.set_time_sequence("frame_id", image_id)
+            rr.set_time_sequence("img_id", img_id)
             rr.log_line_segments(
                 f"world/camera/image/line_track_{track_id}",
                 line_segments_2d,
                 stroke_width=5,
                 color=[0.1, (score - min_score) / (max_score - min_score), 0.1],
             )
-            if image_id + 1 not in lines_2d_dict:
-                rr.set_time_sequence("frame_id", image_id + 1)
+            if img_id + 1 not in lines_2d_dict:
+                rr.set_time_sequence("img_id", img_id + 1)
                 rr.log_cleared(f"world/camera/image/line_track_{track_id}")
 
     def _log_line_detections(self, width=1):
