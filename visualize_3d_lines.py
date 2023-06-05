@@ -75,8 +75,8 @@ def main(args):
 
         if args.segments2d is None:
             segments2d = None
-        elif (not os.path.exists(args.segments2d)) or (not args.bpt3d_vp.endswith('.npz')):
-            raise ValueError("Error! Input file {0} is not valid".format(args.segments2d))
+        elif (not os.path.exists(args.segments2d)):
+            raise ValueError("Error! Segments2d path {0} is not valid".format(args.segments2d))
         else:
             segments2d = limapio.read_all_segments_from_folder(args.segments2d)
 
