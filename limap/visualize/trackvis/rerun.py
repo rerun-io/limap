@@ -56,7 +56,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         self._log_line_detections()
 
         # 3d tracks (candidates + detections)
-        self._log_tracks(width, scale, ranges)
+        self._log_tracks(n_visible_views, width, scale, ranges)
         self._log_single_track(0, width, scale, ranges)
 
         # colmap points and line-point associations
@@ -231,9 +231,11 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 timeless=True,
             )
 
-    def _log_tracks(self, width=0.02, scale=1.0, ranges=None):
+    def _log_tracks(self, n_visible_views, width=0.02, scale=1.0, ranges=None):
         candidate_lines = []
         for track in self.tracks:
+            if track.count_images() < n_visible_views:
+                continue
             candidate_lines += track.line3d_list
 
         rr.log_line_segments(
