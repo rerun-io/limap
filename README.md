@@ -3,11 +3,8 @@
 <img src="./misc/media/supp_qualitative_5x3.png">
 </p>
 
-----------------------------------------------------------------
-**Note**: More README and docs will be available soon.
-----------------------------------------------------------------
 
-LIMAP is a toolbox for mapping and localization with line features. The system was initially described in the highlight paper [3D Line Mapping Revisited](https://arxiv.org/abs/2303.17504) at CVPR 2023 in Vancouver, Canada. Contributors to this project are from the [Computer Vision and Geometry Group](https://cvg.ethz.ch/) at [ETH Zurich](https://ethz.ch/en.html).
+LIMAP is a toolbox for mapping and localization with line features. The system was initially described in the highlight paper [3D Line Mapping Revisited](https://arxiv.org/abs/2303.17504) at CVPR 2023 in Vancouver, Canada. Contributors to this project are from the [Computer Vision and Geometry Group](https://cvg.ethz.ch/) at [ETH Zurich](https://ethz.ch/en.html). This fork has been modified to use [Rerun](https://github.com/rerun-io/rerun) for visualization.
 
 In this project, we provide interfaces for various geometric operations on 2D/3D lines. We support off-the-shelf SfM software including [VisualSfM](http://ccwu.me/vsfm/index.html), [Bundler](https://bundler.io/), and [COLMAP](https://colmap.github.io/) to initialize the camera poses to build 3D line maps on the database. The line detectors, matchers, and vanishing point estimators are abstracted to ensure flexibility to support recent advances and future development. 
 
@@ -58,13 +55,20 @@ To run **Fitnmerge** (line mapping with available depth maps) on Hypersim (visua
 python runners/hypersim/fitnmerge.py --output_dir outputs/quickstart_fitnmerge
 ```
 
-To run **Line Mapping** (RGB-only) on Hypersim (visualization is enabled by default):
+To run **Line Mapping** (RGB-only) on Hypersim:
 ```bash
 python runners/hypersim/triangulation.py --output_dir outputs/quickstart_triangulation
 ```
+
+To run *Line-Point and Line-Vanishing-Point Optimization** on the previous result:
+```bash
+python runners/pointline_association.py -i outputs/quickstart_triangulation/finaltracks/ --colmap_folder outputs/quickstart_triangulation/colmap_outputs/sparse
+```
+
 To run **Visualization** of the 3D line maps after the reconstruction:
 ```bash
-python visualize_3d_lines.py --input_dir outputs/quickstart_triangulation/finaltracks # add the camera frustums with "--imagecols outputs/quickstart_triangulation/imagecols.npy"
+python visualize_3d_lines.py --input_dir outputs/quickstart_triangulation/associated_tracks/ --imagecols outputs/quickstart_triangulation/associated_tracks/imagecols.npy --bpt3d_
+pl outputs/quickstart_triangulation/associated_tracks/bpt3d_pl.npz --bpt3d_vp outputs/quickstart_triangulation/associated_tracks/bpt3d_vp.npz --mode rerun
 ```
 
 [Tips] Options are stored in the config folder: ``cfgs``. You can easily change the options with the Python argument parser. The following shows an example:

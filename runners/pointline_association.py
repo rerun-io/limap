@@ -99,9 +99,12 @@ def pointline_association(cfg, input_folder, output_folder, colmap_folder):
             # optimize again
             associator.SetUp()
             associator.Solve()
+
     new_imagecols = associator.GetOutputImagecols()
     bpt3d = associator.GetBipartite3d_PointLine()
-    bpt3d_vp = associator.GetBipartite3d_VPLine()
+    if cfg["global_pl_association"]["use_vp"]:
+        bpt3d_vp = associator.GetBipartite3d_VPLine()
+
 
     ############################################################
     # IO & visualization
@@ -113,6 +116,11 @@ def pointline_association(cfg, input_folder, output_folder, colmap_folder):
     # save line tracks
     newtracks = bpt3d.get_all_lines()
     limapio.save_folder_linetracks_with_info(output_folder, newtracks, config=cfg_info, imagecols=imagecols, all_2d_segs=all_2d_segs)
+
+    # save point and vanishing point associations
+    np.savez(os.path.join(output_folder, "bpt3d_pl.npz"), bpt3d_pl_np=bpt3d.as_dict())
+    if cfg["global_pl_association"]["use_vp"]:
+        np.savez(os.path.join(output_folder, "bpt3d_vp.npz"), bpt3d_vp_np=bpt3d_vp.as_dict())
 
     # visualize
     if cfg["visualize"]:
