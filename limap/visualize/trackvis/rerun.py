@@ -36,7 +36,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
 
         rr.init("limap reconstruction visualization", spawn=True)
 
-        rr.log_view_coordinates("world", up="+Z", timeless=True)
+        rr.log_view_coordinates("world", up="-Y", timeless=True)
 
         # all lines (i.e., full reconstruction)
         self._log_lines_timeless(n_visible_views, width, scale, ranges)
@@ -108,11 +108,10 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             rgb_img = cv2.resize(rgb_img, (width, height))
             rr.set_time_sequence("img_id", img_id)
             rr.log_image("world/camera/image", rgb_img)
-            translation_xyz = camview.T() * scale
-            quaternion_xyzw = transform.Rotation.from_matrix(camview.R()).as_quat()
-            rr.log_rigid3(
+            rr.log_transform3d(
                 "world/camera",
-                child_from_parent=(translation_xyz, quaternion_xyzw),
+                rr.TranslationAndMat3(camview.T() * scale, camview.R()),
+                from_parent=True,
             )
             rr.log_view_coordinates("world/camera", xyz="RDF")
             rr.log_pinhole(
@@ -133,11 +132,10 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             rgb_img = cv2.resize(rgb_img, (width, height))
             rr.set_time_sequence("img_id", i)
             rr.log_image(f"world/cameras/#{i}/image", rgb_img)
-            translation_xyz = camview.T() * scale
-            quaternion_xyzw = transform.Rotation.from_matrix(camview.R()).as_quat()
-            rr.log_rigid3(
-                f"world/cameras/#{i}",
-                child_from_parent=(translation_xyz, quaternion_xyzw),
+            rr.log_transform3d(
+                "world/camera",
+                rr.TranslationAndMat3(camview.T() * scale, camview.R()),
+                from_parent=True,
             )
             rr.log_view_coordinates(f"world/cameras/#{i}", xyz="RDF")
             rr.log_pinhole(
