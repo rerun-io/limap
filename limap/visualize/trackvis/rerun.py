@@ -2,11 +2,9 @@
 from collections import defaultdict
 
 import cv2
-import numpy as np
 import rerun as rr
-from scipy.spatial import transform
 
-from limap.visualize.vis_lines import rerun_get_line_segments
+from limap.visualize.vis_lines import rerun_get_line_strips
 from limap.visualize.vis_utils import test_line_inside_ranges, test_point_inside_ranges
 
 from .base import BaseTrackVisualizer
@@ -69,7 +67,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
 
     def _log_lines_timeless(self, n_visible_views, width=0.01, scale=1.0, ranges=None):
         lines = self.get_lines_n_visible_views(n_visible_views)
-        line_segments = rerun_get_line_segments(lines, ranges=ranges, scale=scale)
+        line_segments = rerun_get_line_strips(lines, ranges=ranges, scale=scale)
         rr.log_line_segments(
             "world/lines",
             line_segments,
@@ -83,7 +81,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         for i, track in enumerate(self.tracks):
             if track.count_images() < n_visible_views:
                 continue
-            line_segments = rerun_get_line_segments(
+            line_segments = rerun_get_line_strips(
                 [track.line], ranges=ranges, scale=scale
             )
             if len(line_segments) == 0:
@@ -215,7 +213,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         if len(nonvp_line_set):
             rr.log_line_segments(
                 "world/vp_associations/no_vp",
-                rerun_get_line_segments(nonvp_line_set, ranges, scale),
+                rerun_get_line_strips(nonvp_line_set, ranges, scale),
                 stroke_width=width,
                 color=[0.5, 0.5, 0.5],
                 timeless=True,
@@ -224,7 +222,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         for vp_id, vp_line_set in vp_line_sets.items():
             rr.log_line_segments(
                 f"world/vp_associations/vp_{vp_id}",
-                rerun_get_line_segments(vp_line_set, ranges, scale),
+                rerun_get_line_strips(vp_line_set, ranges, scale),
                 stroke_width=width,
                 timeless=True,
             )
@@ -238,7 +236,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
 
         rr.log_line_segments(
             "world/candidate_lines",
-            rerun_get_line_segments(candidate_lines, ranges, scale),
+            rerun_get_line_strips(candidate_lines, ranges, scale),
             stroke_width=width * 0.5,
             color=[0.1, 0.9, 0.1],
             timeless=True,
@@ -251,7 +249,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
 
         track = self.tracks[track_id]
 
-        line_segments = rerun_get_line_segments(
+        line_segments = rerun_get_line_strips(
             [track.line], ranges=ranges, scale=scale
         )
         if len(line_segments) == 0:
@@ -275,7 +273,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 track.line2d_list,
             )
         ):
-            line_segments_3d = rerun_get_line_segments(
+            line_segments_3d = rerun_get_line_strips(
                 [line], ranges=ranges, scale=scale
             )
             if len(line_segments_3d) == 0:
@@ -291,7 +289,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             lines_2d_dict[img_id].append(line_2d)
 
         for img_id, lines_2d in lines_2d_dict.items():
-            line_segments_2d = rerun_get_line_segments(
+            line_segments_2d = rerun_get_line_strips(
                 lines_2d, ranges=ranges, scale=scale
             )
             rr.set_time_sequence("img_id", img_id)

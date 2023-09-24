@@ -27,8 +27,8 @@ einops
 ninja
 yacs
 python-json-logger
---pre -f https://build.rerun.io/commit/b263b9f/wheels
-rerun-sdk==0.7.0a0+2023.5.29.b263b9f
+-f https://build.rerun.io/commit/2e9df4c/wheels 
+rerun-sdk==0.9.0a4
 
 ./third-party/pytlsd
 ./third-party/hawp

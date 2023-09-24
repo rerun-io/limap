@@ -60,7 +60,7 @@ To run **Line Mapping** (RGB-only) on Hypersim:
 python runners/hypersim/triangulation.py --output_dir outputs/quickstart_triangulation
 ```
 
-To run *Line-Point and Line-Vanishing-Point Optimization** on the previous result:
+To run **Line-Point and Line-Vanishing-Point Optimization** on the previous result:
 ```bash
 python runners/pointline_association.py -i outputs/quickstart_triangulation/finaltracks/ --colmap_folder outputs/quickstart_triangulation/colmap_outputs/sparse
 ```
