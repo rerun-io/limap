@@ -299,7 +299,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
 
     def _log_line_detections(self):
         for img_id, segments_2d in self.segments2d_dict.items():
-            line_strips_2d = segments_2d.reshape(-1, 2)
+            line_strips_2d = segments_2d.reshape(-1, 2, 2)
             rr.set_time_sequence("img_id", img_id)
             rr2.log(
                 "world/camera/image/detected_lines",
