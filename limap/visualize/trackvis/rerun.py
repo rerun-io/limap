@@ -3,7 +3,6 @@ from collections import defaultdict
 
 import cv2
 import rerun as rr
-import rerun.experimental as rr2
 
 from limap.visualize.vis_lines import rerun_get_line_strips
 from limap.visualize.vis_utils import test_line_inside_ranges, test_point_inside_ranges
@@ -36,7 +35,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         rr.init("LIMAP Reconstruction Visualization", spawn=True)
 
         # assumption: +Z is up (typically has to be adjusted to dataset)
-        rr2.log("world", rr2.ViewCoordinates.RFU, timeless=True)
+        rr.log("world", rr.ViewCoordinates.RIGHT_HAND_Z_UP, timeless=True)
 
         # all lines (i.e., full reconstruction)
         self._log_lines_timeless(n_visible_views, width, scale, ranges)
@@ -71,9 +70,9 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
     def _log_lines_timeless(self, n_visible_views, width=0.01, scale=1.0, ranges=None):
         lines = self.get_lines_n_visible_views(n_visible_views)
         line_strips = rerun_get_line_strips(lines, ranges=ranges, scale=scale)
-        rr2.log(
+        rr.log(
             "world/lines",
-            rr2.LineStrips3D(line_strips, radii=width, colors=[0.9, 0.1, 0.1]),
+            rr.LineStrips3D(line_strips, radii=width, colors=[0.9, 0.1, 0.1]),
             timeless=True,
         )
 
@@ -89,9 +88,9 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 continue
             img_id = track.GetSortedImageIds()[n_visible_views - 1]
             rr.set_time_sequence("img_id", img_id)
-            rr2.log(
+            rr.log(
                 f"world/sequential_lines/#{i}",
-                rr2.LineStrips3D(line_strips, radii=width, colors=[0.9, 0.1, 0.1])
+                rr.LineStrips3D(line_strips, radii=width, colors=[0.9, 0.1, 0.1])
             )
 
     def _log_camviews(self, imagecols, scale=1.0, ranges=None):
@@ -104,16 +103,20 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             width, height = camview.w(), camview.h()
             rgb_img = cv2.resize(rgb_img, (width, height))
             rr.set_time_sequence("img_id", img_id)
-            rr2.log("world/camera/image", rr2.Image(rgb_img))
-            rr2.log(
+            rr.log(
                 "world/camera",
-                rr2.dt.TranslationAndMat3x3(camview.T() * scale, camview.R(), from_parent=True)
+                rr.TranslationAndMat3x3(camview.T() * scale, camview.R(), from_parent=True)
             )
-            rr2.log("world/camera", rr2.ViewCoordinates.RDF)
-            rr2.log(
+            rr.log("world/camera", rr.ViewCoordinates.RDF)
+            rr.log(
                 "world/camera/image",
-                rr2.Pinhole(image_from_camera=camview.K(), width=width, height=height)
+                rr.Pinhole(
+                    image_from_camera=camview.K(),
+                    width=width,
+                    height=height,
+                )
             )
+            rr.log("world/camera/image", rr.Image(rgb_img))
 
     def _log_camviews_separate(self, camviews, scale=1.0, ranges=None):
         for i, camview in enumerate(camviews):
@@ -125,16 +128,16 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             width, height = camview.w(), camview.h()
             rgb_img = cv2.resize(rgb_img, (width, height))
             rr.set_time_sequence("img_id", i)
-            rr2.log(f"world/cameras/#{i}/image", rr2.Image(rgb_img))
-            rr2.log(
+            rr.log(
                 "world/camera",
                 rr.TranslationAndMat3x3(camview.T() * scale, camview.R(), from_parent=True)
             )
-            rr2.log(f"world/cameras/#{i}", rr2.ViewCoordinates.RDF)
-            rr2.log(
+            rr.log(f"world/cameras/#{i}", rr.ViewCoordinates.RDF)
+            rr.log(
                 f"world/cameras/#{i}/image",
-                rr2.Pinhole(image_from_camera=camview.K(), width=width, height=height)
+                rr.Pinhole(image_from_camera=camview.K(), width=width, height=height)
             )
+            rr.log(f"world/cameras/#{i}/image", rr.Image(rgb_img))
 
     def _log_bpt3d_pl(self, scale=1.0, ranges=None):
         points, degrees = [], []
@@ -151,29 +154,29 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         points_deg2 = [p for p, deg in zip(points, degrees) if deg == 2]
         points_deg3p = [p for p, deg in zip(points, degrees) if deg >= 3]
 
-        rr2.log(
+        rr.log(
             "world/points",
-            rr2.Points3D(positions=points, colors=[0.7, 0.3, 0.3], radii=0.01),
+            rr.Points3D(positions=points, colors=[0.7, 0.3, 0.3], radii=0.01),
             timeless=True,
         )
-        rr2.log(
+        rr.log(
             "world/pl_associations/deg0",
-            rr2.Points3D(positions=points_deg0, colors=[0.3, 0.3, 0.3], radii=0.01),
+            rr.Points3D(positions=points_deg0, colors=[0.3, 0.3, 0.3], radii=0.01),
             timeless=True,
         )
-        rr2.log(
+        rr.log(
             "world/pl_associations/deg1",
-            rr2.Points3D(positions=points_deg1, colors=[0.3, 0.3, 0.9], radii=0.03),
+            rr.Points3D(positions=points_deg1, colors=[0.3, 0.3, 0.9], radii=0.03),
             timeless=True,
         )
-        rr2.log(
+        rr.log(
             "world/pl_associations/deg2",
-            rr2.Points3D(positions=points_deg2, colors=[0.3, 0.9, 0.3], radii=0.05),
+            rr.Points3D(positions=points_deg2, colors=[0.3, 0.9, 0.3], radii=0.05),
             timeless=True,
         )
-        rr2.log(
+        rr.log(
             "world/pl_associations/deg3p",
-            rr2.Points3D(positions=points_deg3p, colors=[0.9, 0.3, 0.3], radii=0.07),
+            rr.Points3D(positions=points_deg3p, colors=[0.9, 0.3, 0.3], radii=0.07),
             timeless=True,
         )
 
@@ -194,9 +197,9 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             vp_line_sets[vp_id].append(ltrack.line)
 
         if len(nonvp_line_set):
-            rr2.log(
+            rr.log(
                 "world/vp_associations/no_vp",
-                rr2.LineStrips3D(
+                rr.LineStrips3D(
                     strips=rerun_get_line_strips(nonvp_line_set, ranges, scale),
                     radii=width,
                     colors=[0.5, 0.5, 0.5]
@@ -205,9 +208,9 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             )
 
         for vp_id, vp_line_set in vp_line_sets.items():
-            rr2.log(
+            rr.log(
                 f"world/vp_associations/vp_{vp_id}",
-                rr2.LineStrips3D(
+                rr.LineStrips3D(
                     strips=rerun_get_line_strips(vp_line_set, ranges, scale),
                     radii=width,
                 ),
@@ -221,9 +224,9 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 continue
             candidate_lines += track.line3d_list
 
-        rr2.log(
+        rr.log(
             "world/candidate_lines",
-            rr2.LineStrips3D(
+            rr.LineStrips3D(
                 strips=rerun_get_line_strips(candidate_lines, ranges, scale),
                 radii=width * 0.5,
                 colors=[0.1, 0.9, 0.1],
@@ -244,9 +247,9 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
         if len(line_strips) == 0:
             return
 
-        rr2.log(
+        rr.log(
             f"world/track_{track_id}/final_line",
-            rr2.LineStrips3D(
+            rr.LineStrips3D(
                 line_strips,
                 radii=width,
                 colors=[1.0, 0.0, 0.0],
@@ -271,9 +274,9 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 continue
 
             rr.set_time_sequence("img_id", img_id)
-            rr2.log(
+            rr.log(
                 f"world/track_{track_id}/lines/#{line_id}",
-                rr2.LineStrips3D(
+                rr.LineStrips3D(
                     line_strips_3d,
                     radii=width * 0.5,
                     colors=[0.1, (score - min_score) / (max_score - min_score), 0.1]
@@ -286,22 +289,22 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 lines_2d, ranges=ranges, scale=scale
             )
             rr.set_time_sequence("img_id", img_id)
-            rr2.log(
+            rr.log(
                 f"world/camera/image/line_track_{track_id}",
-                rr2.LineStrips2D(
+                rr.LineStrips2D(
                     line_strips_2d,
                     colors=[0.1, (score - min_score) / (max_score - min_score), 0.1],
                 )
             )
             if img_id + 1 not in lines_2d_dict:
                 rr.set_time_sequence("img_id", img_id + 1)
-                rr2.log(f"world/camera/image/line_track_{track_id}", rr2.Clear(False))
+                rr.log(f"world/camera/image/line_track_{track_id}", rr.Clear.flat())
 
     def _log_line_detections(self):
         for img_id, segments_2d in self.segments2d_dict.items():
             line_strips_2d = segments_2d.reshape(-1, 2, 2)
             rr.set_time_sequence("img_id", img_id)
-            rr2.log(
+            rr.log(
                 "world/camera/image/detected_lines",
-                rr2.LineStrips2D(line_strips_2d)
+                rr.LineStrips2D(line_strips_2d)
             )

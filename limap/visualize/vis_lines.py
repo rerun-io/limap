@@ -143,10 +143,9 @@ def open3d_vis_3d_lines(lines, width=2, ranges=None, scale=1.0):
 
 def rerun_vis_3d_lines(lines, width=0.01, ranges=None, scale=1.0):
     import rerun as rr
-    import rerun.experimental as rr2
     rr.init("LIMAP Line Visualization", spawn=True)
     line_strips = rerun_get_line_strips(lines, ranges=ranges, scale=scale)
-    rr2.log(
+    rr.log(
         "lines",
-        rr2.LineStrips3D(strips=line_strips, radii=width, colors=[1.0, 0.0, 0.0])
+        rr.LineStrips3D(strips=line_strips, radii=width, colors=[1.0, 0.0, 0.0])
     )
