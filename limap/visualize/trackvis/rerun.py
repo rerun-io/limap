@@ -107,13 +107,13 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 "world/camera",
                 rr.TranslationAndMat3x3(camview.T() * scale, camview.R(), from_parent=True)
             )
-            rr.log("world/camera", rr.ViewCoordinates.RDF)
             rr.log(
                 "world/camera/image",
                 rr.Pinhole(
                     image_from_camera=camview.K(),
                     width=width,
                     height=height,
+                    camera_xyz=rr.ViewCoordinates.RDF
                 )
             )
             rr.log("world/camera/image", rr.Image(rgb_img))
@@ -132,10 +132,14 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
                 "world/camera",
                 rr.TranslationAndMat3x3(camview.T() * scale, camview.R(), from_parent=True)
             )
-            rr.log(f"world/cameras/#{i}", rr.ViewCoordinates.RDF)
             rr.log(
                 f"world/cameras/#{i}/image",
-                rr.Pinhole(image_from_camera=camview.K(), width=width, height=height)
+                rr.Pinhole(
+                    image_from_camera=camview.K(),
+                    width=width,
+                    height=height,
+                    camera_xyz=rr.ViewCoordinates.RDF
+                )
             )
             rr.log(f"world/cameras/#{i}/image", rr.Image(rgb_img))
 
