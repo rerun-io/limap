@@ -105,7 +105,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             rr.set_time_sequence("img_id", img_id)
             rr.log(
                 "world/camera",
-                rr.TranslationAndMat3x3(camview.T() * scale, camview.R(), from_parent=True)
+                rr.Transform3D(translation=camview.T() * scale, mat3x3=camview.R(), from_parent=True)
             )
             rr.log(
                 "world/camera/image",
@@ -130,7 +130,7 @@ class RerunTrackVisualizer(BaseTrackVisualizer):
             rr.set_time_sequence("img_id", i)
             rr.log(
                 "world/camera",
-                rr.TranslationAndMat3x3(camview.T() * scale, camview.R(), from_parent=True)
+                rr.Transform3D(translation=camview.T() * scale, mat3x3=camview.R(), from_parent=True)
             )
             rr.log(
                 f"world/cameras/#{i}/image",
