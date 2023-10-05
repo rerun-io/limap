@@ -79,15 +79,14 @@ def open3d_add_line_set(w, lines, color=[0.0, 0.0, 0.0], width=2, name="lineset"
     w.add_geometry(name, line_set, mat)
     return w
 
-def rerun_get_line_segments(lines, ranges=None, scale=1.0):
-    line_segments = []
+def rerun_get_line_strips(lines, ranges=None, scale=1.0):
+    line_strips = []
     for line in lines:
         if ranges is not None:
             if not test_line_inside_ranges(line, ranges):
                 continue
-        line_segments.append(line.start * scale)
-        line_segments.append(line.end * scale)
-    return np.array(line_segments)
+        line_strips.append([line.start * scale, line.end * scale])
+    return line_strips
 
 def open3d_get_cameras(imagecols, color=[1.0, 0.0, 0.0], ranges=None, scale_cam_geometry=1.0, scale=1.0):
     import open3d as o3d
@@ -144,6 +143,9 @@ def open3d_vis_3d_lines(lines, width=2, ranges=None, scale=1.0):
 
 def rerun_vis_3d_lines(lines, width=0.01, ranges=None, scale=1.0):
     import rerun as rr
-    rr.init("limap", spawn=True)
-    line_segments = rerun_get_line_segments(lines, ranges=ranges, scale=scale)
-    rr.log_line_segments("lines", line_segments, stroke_width=width, color=[1.0, 0.0, 0.0])
+    rr.init("LIMAP Line Visualization", spawn=True)
+    line_strips = rerun_get_line_strips(lines, ranges=ranges, scale=scale)
+    rr.log(
+        "lines",
+        rr.LineStrips3D(strips=line_strips, radii=width, colors=[1.0, 0.0, 0.0])
+    )
